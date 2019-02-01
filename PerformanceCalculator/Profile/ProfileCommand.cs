@@ -68,6 +68,7 @@ namespace PerformanceCalculator.Profile
                 Console.WriteLine("Getting user top scores...");
             foreach (var play in getJsonFromApi($"get_user_best?k={Key}&u={ProfileName}&m={Ruleset}&limit=100&type=username"))
             {
+                try {
                 string beatmapID = play.beatmap_id;
 
                 string cachePath = Path.Combine("cache", $"{beatmapID}.osu");
@@ -107,6 +108,7 @@ namespace PerformanceCalculator.Profile
                 };
 
                 displayPlays.Add(thisPlay);
+                } catch (Exception) {}
             }
 
             var localOrdered = displayPlays.OrderByDescending(p => p.LocalPP).ToList();
