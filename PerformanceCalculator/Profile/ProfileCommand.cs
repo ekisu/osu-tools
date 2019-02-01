@@ -37,16 +37,35 @@ namespace PerformanceCalculator.Profile
 
         private const string base_url = "https://osu.ppy.sh";
 
+        class SimpleUserPlayInfo {
+            public int? BeatmapID { get; set; } // uhh idk
+            public string BeatmapName { get; set; }
+            public double LivePP { get; set; } 
+            public double LocalPP { get; set; }
+            public double PPDelta { get; set; }
+            public int PositionDelta { get; set; }
+        }
+
+        class PerformanceResults {
+            public string Username { get; set; }
+            public double LivePP { get; set; } 
+            public double LocalPP { get; set; }
+            public double BonusPP { get; set; }
+            public List<SimpleUserPlayInfo> DisplayPlays { get; set; }
+        }
+
         public override void Execute()
         {
                         var displayPlays = new List<UserPlayInfo>();
 
             var ruleset = LegacyHelper.GetRulesetFromLegacyID(Ruleset ?? 0);
 
-            Console.WriteLine("Getting user data...");
+            if (!OutputAsJSON ?? false) // Be quiet!
+                Console.WriteLine("Getting user data...");
             dynamic userData = getJsonFromApi($"get_user?k={Key}&u={ProfileName}&m={Ruleset}&type=username")[0];
 
-            Console.WriteLine("Getting user top scores...");
+            if (!OutputAsJSON ?? false)
+                Console.WriteLine("Getting user top scores...");
             foreach (var play in getJsonFromApi($"get_user_best?k={Key}&u={ProfileName}&m={Ruleset}&limit=100&type=username"))
             {
                 string beatmapID = play.beatmap_id;
@@ -54,7 +73,8 @@ namespace PerformanceCalculator.Profile
                 string cachePath = Path.Combine("cache", $"{beatmapID}.osu");
                 if (!File.Exists(cachePath))
                 {
-                    Console.WriteLine($"Downloading {beatmapID}.osu...");
+                    if (!OutputAsJSON ?? false)
+                        Console.WriteLine($"Downloading {beatmapID}.osu...");
                     new FileWebRequest(cachePath, $"{base_url}/osu/{beatmapID}").Perform();
                 }
 
@@ -103,31 +123,50 @@ namespace PerformanceCalculator.Profile
             var playcountBonusPP = (totalLivePP - nonBonusLivePP);
             totalLocalPP += playcountBonusPP;
 
-            OutputDocument(new Document(
-                new Span($"User:     {userData.username}"), "\n",
-                new Span($"Live PP:  {totalLivePP:F1} (including {playcountBonusPP:F1}pp from playcount)"), "\n",
-                new Span($"Local PP: {totalLocalPP:F1}"), "\n",
-                new Grid
+            if (OutputAsJSON ?? false) {
+                OutputJSON(new PerformanceResults
                 {
-                    Columns = { GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto },
-                    Children =
+                    Username = userData.username,
+                    LivePP = totalLivePP,
+                    LocalPP = totalLocalPP,
+                    BonusPP = playcountBonusPP,
+                    DisplayPlays = localOrdered.Select(item => new SimpleUserPlayInfo
                     {
-                        new Cell("beatmap"),
-                        new Cell("live pp"),
-                        new Cell("local pp"),
-                        new Cell("pp change"),
-                        new Cell("position change"),
-                        localOrdered.Select(item => new[]
+                        BeatmapID = item.Beatmap.OnlineBeatmapID,
+                        BeatmapName = item.Beatmap.ToString(),
+                        LivePP = item.LivePP,
+                        LocalPP = item.LocalPP,
+                        PPDelta = item.LocalPP - item.LivePP,
+                        PositionDelta = liveOrdered.IndexOf(item) - localOrdered.IndexOf(item)
+                    }).ToList()
+                });
+            } else {
+                OutputDocument(new Document(
+                    new Span($"User:     {userData.username}"), "\n",
+                    new Span($"Live PP:  {totalLivePP:F1} (including {playcountBonusPP:F1}pp from playcount)"), "\n",
+                    new Span($"Local PP: {totalLocalPP:F1}"), "\n",
+                    new Grid
+                    {
+                        Columns = { GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto },
+                        Children =
                         {
-                            new Cell($"{item.Beatmap.OnlineBeatmapID} - {item.Beatmap}"),
-                            new Cell($"{item.LivePP:F1}") { Align = Align.Right },
-                            new Cell($"{item.LocalPP:F1}") { Align = Align.Right },
-                            new Cell($"{item.LocalPP - item.LivePP:F1}") { Align = Align.Right },
-                            new Cell($"{liveOrdered.IndexOf(item) - localOrdered.IndexOf(item):+0;-0;-}") { Align = Align.Center },
-                        })
+                            new Cell("beatmap"),
+                            new Cell("live pp"),
+                            new Cell("local pp"),
+                            new Cell("pp change"),
+                            new Cell("position change"),
+                            localOrdered.Select(item => new[]
+                            {
+                                new Cell($"{item.Beatmap.OnlineBeatmapID} - {item.Beatmap}"),
+                                new Cell($"{item.LivePP:F1}") { Align = Align.Right },
+                                new Cell($"{item.LocalPP:F1}") { Align = Align.Right },
+                                new Cell($"{item.LocalPP - item.LivePP:F1}") { Align = Align.Right },
+                                new Cell($"{liveOrdered.IndexOf(item) - localOrdered.IndexOf(item):+0;-0;-}") { Align = Align.Center },
+                            })
+                        }
                     }
-                }
-            ));
+                ));
+            }
         }
 
         private dynamic getJsonFromApi(string request)

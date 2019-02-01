@@ -5,6 +5,7 @@ using System.IO;
 using Alba.CsConsoleFormat;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 
 namespace PerformanceCalculator
 {
@@ -19,6 +20,10 @@ namespace PerformanceCalculator
         [UsedImplicitly]
         [Option(Template = "-o|--output <file.txt>", Description = "Output results to text file.")]
         public string OutputFile { get; }
+
+        [UsedImplicitly]
+        [Option(Template = "-j|--json", Description = "Output results as JSON.")]
+        public bool? OutputAsJSON { get; }
 
         public void OnExecute(CommandLineApplication app, IConsole console)
         {
@@ -44,6 +49,14 @@ namespace PerformanceCalculator
                 if (OutputFile != null)
                     File.WriteAllText(OutputFile, str);
             }
+        }
+
+        public void OutputJSON(dynamic data) {
+            string output = JsonConvert.SerializeObject(data);
+
+            Console.Write(output);
+            if (OutputFile != null)
+                File.WriteAllText(OutputFile, output);
         }
 
         public virtual void Execute()
