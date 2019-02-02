@@ -46,7 +46,10 @@ namespace PerformanceCalculator.Simulate
         public virtual int? Goods { get; }
 
         class SimulationResults {
-            public Dictionary<String, double> CategoryAttribs { get; set; }
+            public string BeatmapInfo { get; set; }
+            public List<String> Mods;
+            public Dictionary<string, dynamic> PlayInfo { get; set; }
+            public Dictionary<string, double> CategoryAttribs { get; set; }
             public double PP { get; set; }
         }
 
@@ -80,9 +83,15 @@ namespace PerformanceCalculator.Simulate
             double pp = ruleset.CreatePerformanceCalculator(workingBeatmap, scoreInfo).Calculate(categoryAttribs);
 
             if (OutputAsJSON ?? false) {
+                var playInfo = new Dictionary<string, dynamic>();
+                WritePlayInfoToDict(playInfo, scoreInfo, beatmap);
+
                 OutputJSON(new SimulationResults
                 {
+                    BeatmapInfo = workingBeatmap.BeatmapInfo.ToString(),
+                    Mods = mods.Select(m => m.Acronym).ToList(),
                     CategoryAttribs = categoryAttribs,
+                    PlayInfo = playInfo,
                     PP = pp
                 });
             } else {
@@ -118,6 +127,8 @@ namespace PerformanceCalculator.Simulate
 
             return mods;
         }
+
+        protected virtual void WritePlayInfoToDict(Dictionary<string, dynamic> dict, ScoreInfo scoreInfo, IBeatmap beatmap) {}
 
         protected abstract void WritePlayInfo(ScoreInfo scoreInfo, IBeatmap beatmap);
 

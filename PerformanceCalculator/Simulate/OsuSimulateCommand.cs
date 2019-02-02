@@ -116,5 +116,16 @@ namespace PerformanceCalculator.Simulate
                 WriteAttribute(Enum.GetName(typeof(HitResult), statistic.Key), statistic.Value.ToString(CultureInfo.InvariantCulture));
             }
         }
+
+        protected override void WritePlayInfoToDict(Dictionary<string, dynamic> dict, ScoreInfo scoreInfo, IBeatmap beatmap)
+        {
+            dict["Accuracy"] = (scoreInfo.Accuracy * 100);
+            dict["Combo"] = scoreInfo.MaxCombo;
+            dict["MaxCombo"] = GetMaxCombo(beatmap);
+            foreach (var statistic in scoreInfo.Statistics)
+            {
+                dict[Enum.GetName(typeof(HitResult), statistic.Key)] = statistic.Value;
+            }
+        }
     }
 }
