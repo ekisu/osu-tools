@@ -45,6 +45,11 @@ namespace PerformanceCalculator.Simulate
         [UsedImplicitly]
         public virtual int? Goods { get; }
 
+        class SimulationResults {
+            public Dictionary<String, double> CategoryAttribs { get; set; }
+            public double PP { get; set; }
+        }
+
         public override void Execute()
         {
             var ruleset = Ruleset;
@@ -74,18 +79,26 @@ namespace PerformanceCalculator.Simulate
             var categoryAttribs = new Dictionary<string, double>();
             double pp = ruleset.CreatePerformanceCalculator(workingBeatmap, scoreInfo).Calculate(categoryAttribs);
 
-            Console.WriteLine(workingBeatmap.BeatmapInfo.ToString());
+            if (OutputAsJSON ?? false) {
+                OutputJSON(new SimulationResults
+                {
+                    CategoryAttribs = categoryAttribs,
+                    PP = pp
+                });
+            } else {
+                Console.WriteLine(workingBeatmap.BeatmapInfo.ToString());
 
-            WritePlayInfo(scoreInfo, beatmap);
+                WritePlayInfo(scoreInfo, beatmap);
 
-            WriteAttribute("Mods", mods.Length > 0
-                ? mods.Select(m => m.Acronym).Aggregate((c, n) => $"{c}, {n}")
-                : "None");
+                WriteAttribute("Mods", mods.Length > 0
+                    ? mods.Select(m => m.Acronym).Aggregate((c, n) => $"{c}, {n}")
+                    : "None");
 
-            foreach (var kvp in categoryAttribs)
-                WriteAttribute(kvp.Key, kvp.Value.ToString(CultureInfo.InvariantCulture));
+                foreach (var kvp in categoryAttribs)
+                    WriteAttribute(kvp.Key, kvp.Value.ToString(CultureInfo.InvariantCulture));
 
-            WriteAttribute("pp", pp.ToString(CultureInfo.InvariantCulture));
+                WriteAttribute("pp", pp.ToString(CultureInfo.InvariantCulture));
+            }
         }
 
         private List<Mod> getMods(Ruleset ruleset)
