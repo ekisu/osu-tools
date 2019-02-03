@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Game.Beatmaps;
+using System.Collections.Generic;
 
 namespace PerformanceCalculator.Profile
 {
@@ -15,6 +16,6 @@ namespace PerformanceCalculator.Profile
 
         public BeatmapInfo Beatmap;
 
-        public string Mods;
+        public List<string> Mods;
     }
 }

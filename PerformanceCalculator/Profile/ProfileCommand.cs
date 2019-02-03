@@ -40,6 +40,7 @@ namespace PerformanceCalculator.Profile
         class SimpleUserPlayInfo {
             public int? BeatmapID { get; set; } // uhh idk
             public string BeatmapName { get; set; }
+            public List<string> Mods { get; set; }
             public double LivePP { get; set; } 
             public double LocalPP { get; set; }
             public double PPDelta { get; set; }
@@ -104,7 +105,7 @@ namespace PerformanceCalculator.Profile
                     Beatmap = working.BeatmapInfo,
                     LocalPP = ruleset.CreatePerformanceCalculator(working, score.ScoreInfo).Calculate(),
                     LivePP = play.pp,
-                    Mods = mods.Length > 0 ? mods.Select(m => m.Acronym).Aggregate((c, n) => $"{c}, {n}") : "None"
+                    Mods = mods.Select(m => m.Acronym).ToList()
                 };
 
                 displayPlays.Add(thisPlay);
@@ -136,6 +137,7 @@ namespace PerformanceCalculator.Profile
                     {
                         BeatmapID = item.Beatmap.OnlineBeatmapID,
                         BeatmapName = item.Beatmap.ToString(),
+                        Mods = item.Mods,
                         LivePP = item.LivePP,
                         LocalPP = item.LocalPP,
                         PPDelta = item.LocalPP - item.LivePP,
