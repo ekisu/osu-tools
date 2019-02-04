@@ -41,6 +41,7 @@ namespace PerformanceCalculator.Profile
             public int? BeatmapID { get; set; } // uhh idk
             public string BeatmapName { get; set; }
             public List<string> Mods { get; set; }
+            public double Accuracy { get; set; }
             public double LivePP { get; set; } 
             public double LocalPP { get; set; }
             public double PPDelta { get; set; }
@@ -105,6 +106,7 @@ namespace PerformanceCalculator.Profile
                     Beatmap = working.BeatmapInfo,
                     LocalPP = ruleset.CreatePerformanceCalculator(working, score.ScoreInfo).Calculate(),
                     LivePP = play.pp,
+                    Accuracy = score.ScoreInfo.Accuracy * 100, // Accuracy range is 0-1.
                     Mods = mods.Select(m => m.Acronym).ToList()
                 };
 
@@ -137,6 +139,7 @@ namespace PerformanceCalculator.Profile
                     {
                         BeatmapID = item.Beatmap.OnlineBeatmapID,
                         BeatmapName = item.Beatmap.ToString(),
+                        Accuracy = item.Accuracy,
                         Mods = item.Mods,
                         LivePP = item.LivePP,
                         LocalPP = item.LocalPP,

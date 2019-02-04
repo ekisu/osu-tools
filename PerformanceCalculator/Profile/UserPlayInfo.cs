@@ -13,6 +13,7 @@ namespace PerformanceCalculator.Profile
     {
         public double LocalPP;
         public double LivePP;
+        public double Accuracy;
 
         public BeatmapInfo Beatmap;
 
