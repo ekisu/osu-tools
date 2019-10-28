@@ -15,6 +15,6 @@
   <ItemGroup>
     <PackageReference Include="Alba.CsConsoleFormat" Version="1.0.0" />
     <PackageReference Include="ILLink.Tasks" Version="0.1.5-preview-1841731" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.3" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.4.2" />
   </ItemGroup>
 </Project>
